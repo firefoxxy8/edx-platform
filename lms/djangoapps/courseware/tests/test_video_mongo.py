@@ -219,6 +219,7 @@ class TestGetHtmlMethod(BaseTestXmodule):
     '''
     Make sure that `get_html` works correctly.
     '''
+    maxDiff = None
     CATEGORY = "video"
     DATA = SOURCE_XML
     METADATA = {}
@@ -234,6 +235,7 @@ class TestGetHtmlMethod(BaseTestXmodule):
             'sources': '[]',
             'duration': 111.0,
             'poster': None,
+            'hls_primary_playback_enabled': False,
             'captionDataDir': None,
             'showCaptions': 'true',
             'generalSpeed': 1.0,
