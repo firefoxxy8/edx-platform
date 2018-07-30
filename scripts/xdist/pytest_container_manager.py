@@ -120,7 +120,7 @@ class PytestContainerManager():
         """
         Terminates tasks based on a list of task_arns.
         """
-        for task_arn in task_arns:
+        for task_arn in task_arns.split(','):
             response = self.ecs.stop_task(
                 cluster=self.cluster_name,
                 task=task_arn,
@@ -165,7 +165,7 @@ if __name__ == "__main__":
                         help="ECS launch type for tasks. Defaults to FARGATE")
 
     # Terminating tasks
-    parser.add_argument('--task_arns', '-arns', nargs='+', default=None,
+    parser.add_argument('--task_arns', '-arns', default=None,
                         help="Task arns to terminate")
 
     parser.add_argument('--reason', '-r', default="Finished executing tests",
