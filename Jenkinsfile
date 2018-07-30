@@ -31,8 +31,12 @@ pipeline {
     stages {
         stage("Git checkout"){
             steps {
-                script {
-                    runPythonTests()
+                sshagent(credentials: ['jenkins-worker'], ignoreMissing: true) {
+                    checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: '${sha1}']],
+                        doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [],
+                        userRemoteConfigs: [[credentialsId: 'jenkins-worker',
+                        refspec: '+refs/heads/*:refs/remotes/origin/* +refs/pull/*:refs/remotes/origin/pr/*',
+                        url: 'git@github.com:edx/edx-platform.git']]]
                 }
             }
         }
