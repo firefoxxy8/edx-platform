@@ -42,7 +42,7 @@ if [[ -n "$XDIST_NUM_TASKS" ]]; then
     export SHARD="all"
 else
     PAVER_ARGS="-v"
-    PARALLEL="--processes=-1"
+    PARALLEL=1
 fi
 
 case "${TEST_SUITE}" in

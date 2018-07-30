@@ -31,7 +31,7 @@ pipeline {
             parallel {
                 stage('lms-unit') {
                     environment {
-                        XDIST_NUM_TASKS = 10
+                        XDIST_NUM_TASKS = 1
                         XDIST_CONTAINER_TASK_NAME = "jenkins-worker-task"
                         TEST_SUITE = "lms-unit"
                     }
