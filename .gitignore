@@ -74,7 +74,6 @@ reports/
 jscover.log
 jscover.log.*
 .pytest_cache/
-pytest_task*.txt
 .tddium*
 common/test/data/test_unicode/static/
 test_root/courses/
@@ -85,6 +84,7 @@ test_root/uploads/
 django-pyfs
 .tox/
 common/test/db_cache/bok_choy_*.yaml
+xdist_files/*
 
 ### Installation artifacts
 *.egg-info

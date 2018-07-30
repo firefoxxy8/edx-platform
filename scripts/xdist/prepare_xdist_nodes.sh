@@ -5,9 +5,10 @@ echo "Spinning up xdist containers with pytest_container_manager.py"
 python scripts/xdist/pytest_container_manager.py -a up -n ${XDIST_NUM_TASKS} \
 -t ${XDIST_CONTAINER_TASK_NAME} \
 -s ${XDIST_CONTAINER_SUBNET} \
--sg ${XDIST_CONTAINER_SECURITY_GROUP}
+-sg ${XDIST_CONTAINER_SECURITY_GROUP} \
+--file_name_prefix ${XDIST_FILE_NAME_PREFIX}
 
-ip_list=$(<pytest_task_ips.txt)
+ip_list=$(<xdist_files/${XDIST_FILE_NAME_PREFIX}_ips.txt)
 for ip in $(echo $ip_list | sed "s/,/ /g")
 do
     container_reqs_cmd="ssh -o StrictHostKeyChecking=no ubuntu@$ip 'cd /edx/app/edxapp/edx-platform;

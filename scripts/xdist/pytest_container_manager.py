@@ -4,6 +4,7 @@ import time
 
 import boto3
 from botocore.exceptions import ClientError
+from paver.easy import sh
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -18,7 +19,7 @@ class PytestContainerManager():
         self.ecs = boto3.client('ecs', region)
         self.cluster_name = cluster
 
-    def spin_up_tasks(self, number_of_tasks, task_name, subnets, security_groups, public_ip, launch_type):
+    def spin_up_tasks(self, number_of_tasks, task_name, subnets, security_groups, public_ip, launch_type, file_name_prefix):
         """
         Spins up tasks and generates two .txt files, containing the IP/ arns
         of the new tasks.
@@ -106,13 +107,13 @@ class PytestContainerManager():
         # Generate .txt files containing IP addresses and task arns
         ip_list_string = ",".join(ip_addresses)
         logger.info("Task IP list: {}".format(ip_list_string))
-        ip_list_file = open("pytest_task_ips.txt", "w")
+        ip_list_file = open("xdist/{}_ips.txt".format(file_name_prefix), "w")
         ip_list_file.write(ip_list_string)
         ip_list_file.close()
 
         task_arn_list_string = ",".join(task_arns)
         logger.info("Task arn list: {}".format(task_arn_list_string))
-        task_arn_file = open("pytest_task_arns.txt", "w")
+        task_arn_file = open("xdist/{}_task_arns.txt".format(file_name_prefix), "w")
         task_arn_file.write(task_arn_list_string)
         task_arn_file.close()
 
@@ -134,23 +135,29 @@ if __name__ == "__main__":
         description="PytestContainerManager, manages ECS tasks in an AWS cluster."
     )
 
-    parser.add_argument('--region', '-g', default='us-east-1',
-                        help="AWS region where ECS infrastructure lives. Defaults to us-east-1")
+    parser.add_argument('--action', '-a', choices=['up', 'down'], default=None,
+                        help="Action for PytestContainerManager to perform. "
+                        "Either up for spinning up AWS ECS tasks or down for stopping them")
 
     parser.add_argument('--cluster', '-c', default="jenkins-worker-containers",
                         help="AWS Cluster name where the tasks run. Defaults to"
                         "the testeng cluster: jenkins-worker-containers")
 
-    parser.add_argument('--action', '-a', choices=['up', 'down'], default=None,
-                        help="Action for PytestContainerManager to perform. "
-                        "Either up for spinning up AWS ECS tasks or down for stopping them")
+    parser.add_argument('--region', '-g', default='us-east-1',
+                        help="AWS region where ECS infrastructure lives. Defaults to us-east-1")
 
     # Spinning up tasks
+    parser.add_argument('--file_name_prefix', default=None,
+                        help="Unique prefix for the files that will store IP and task arns")
+
+    parser.add_argument('--launch_type', default='FARGATE', choices=['EC2', 'FARGATE'],
+                        help="ECS launch type for tasks. Defaults to FARGATE")
+
     parser.add_argument('--num_tasks', '-n', type=int, default=None,
                         help="Number of ECS tasks to spin up")
 
-    parser.add_argument('--task_name', '-t', default=None,
-                        help="Name of the task definition")
+    parser.add_argument('--public_ip', choices=['ENABLED', 'DISABLED'],
+                        default='DISABLED', help="Whether the tasks should have a public IP")
 
     parser.add_argument('--subnets', '-s', nargs='+', default=None,
                         help="List of subnets for the tasks to exist in")
@@ -158,18 +165,15 @@ if __name__ == "__main__":
     parser.add_argument('--security_groups', '-sg', nargs='+', default=None,
                         help="List of security groups to apply to the tasks")
 
-    parser.add_argument('--public_ip', choices=['ENABLED', 'DISABLED'],
-                        default='DISABLED', help="Whether the tasks should have a public IP")
-
-    parser.add_argument('--launch_type', default='FARGATE', choices=['EC2', 'FARGATE'],
-                        help="ECS launch type for tasks. Defaults to FARGATE")
+    parser.add_argument('--task_name', '-t', default=None,
+                        help="Name of the task definition")
 
     # Terminating tasks
-    parser.add_argument('--task_arns', '-arns', default=None,
-                        help="Task arns to terminate")
-
     parser.add_argument('--reason', '-r', default="Finished executing tests",
                         help="Reason for terminating tasks")
+
+    parser.add_argument('--task_arns', '-arns', default=None,
+                        help="Task arns to terminate")
 
     args = parser.parse_args()
     containerManager = PytestContainerManager(args.region, args.cluster)
@@ -181,7 +185,8 @@ if __name__ == "__main__":
             args.subnets,
             args.security_groups,
             args.public_ip,
-            args.launch_type
+            args.launch_type,
+            args.file_name_prefix
         )
     elif args.action == 'down':
         containerManager.terminate_tasks(

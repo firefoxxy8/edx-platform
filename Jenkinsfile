@@ -26,6 +26,7 @@ pipeline {
     environment {
         XDIST_CONTAINER_SUBNET = credentials('XDIST_CONTAINER_SUBNET')
         XDIST_CONTAINER_SECURITY_GROUP = credentials('XDIST_CONTAINER_SECURITY_GROUP')
+        XDIST_CONTAINER_TASK_NAME = "jenkins-worker-task"
         XDIST_GIT_BRANCH = "${sha1}"
     }
     stages {
@@ -44,9 +45,9 @@ pipeline {
             parallel {
                 stage("lms-unit") {
                     environment {
-                        XDIST_NUM_TASKS = 10
-                        XDIST_CONTAINER_TASK_NAME = "jenkins-worker-task"
                         TEST_SUITE = "lms-unit"
+                        XDIST_FILE_NAME_PREFIX = "${TEST_SUITE}"
+                        XDIST_NUM_TASKS = 10
                     }
                     steps {
                         script {
@@ -63,9 +64,9 @@ pipeline {
                 }
                 stage("cms-unit") {
                     environment {
-                        XDIST_NUM_TASKS = 2
-                        XDIST_CONTAINER_TASK_NAME = "jenkins-worker-task"
                         TEST_SUITE = "cms-unit"
+                        XDIST_FILE_NAME_PREFIX = "${TEST_SUITE}"
+                        XDIST_NUM_TASKS = 2
                     }
                     steps {
                         script {
@@ -82,9 +83,9 @@ pipeline {
                 }
                 stage("commonlib-unit") {
                     environment {
-                        XDIST_NUM_TASKS = 3
-                        XDIST_CONTAINER_TASK_NAME = "jenkins-worker-task"
                         TEST_SUITE = "commonlib-unit"
+                        XDIST_FILE_NAME_PREFIX = "${TEST_SUITE}"
+                        XDIST_NUM_TASKS = 3
                     }
                     steps {
                         script {
